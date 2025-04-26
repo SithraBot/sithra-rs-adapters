@@ -16,3 +16,5 @@ thiserror.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 tokio-tungstenite = "0.26.2"
+toml = "0.8.21"
+futures-util = { version = "0.3.31", features = ["sink", "io", "tokio-io"] }
