@@ -1,0 +1,5 @@
+# 机器人的 WebSocket 地址 (仅支持 OneBot11 正向 WebSocket)
+ws-url = "ws://127.0.0.1:6700"
+
+# 机器人 ID
+self-id = 1234567890

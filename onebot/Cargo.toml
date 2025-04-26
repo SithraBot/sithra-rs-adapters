@@ -1,0 +1,36 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+default-members = ["crates/sithra_onebot"]
+
+[workspace.package]
+edition = "2024"
+
+[workspace.dependencies]
+
+# Workspace member crates
+
+sithra_onebot_common = { path = "crates/sithra_onebot_common" }
+
+# Extrenal crates
+
+ioevent = { version = "0.1.0-rc.3", git = "https://github.com/BERADQ/ioevent.git" }
+sithra_common = { git = "https://github.com/SithraBot/sithra-rs.git", branch = "refactor" }
+serde = { version = "1", features = ["derive", "serde_derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+thiserror = "2"
+log = "0.4"
+
+[profile.dev]
+split-debuginfo = "unpacked"
+debug = "limited"
+codegen-units = 16
+
+[profile.release]
+debug = "limited"
+lto = "thin"
+panic = "abort"
+strip = true
+codegen-units = 1
+opt-level = 3
