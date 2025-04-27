@@ -1,8 +1,10 @@
 mod config;
-mod state;
+mod api_client;
+mod error;
+mod internal;
 
 use log::*;
-use sithra_common::{kv, msg, prelude::*};
+use sithra_common::{kv, msg, prelude::{common::CommonMessage, *}};
 use sithra_onebot_common::message::*;
 
 const SUBSCRIBERS: &[ioevent::Subscriber<()>] = &[];
@@ -57,6 +59,12 @@ async fn main(wright: &ioevent::EffectWright) {
             text: "你好",
             img: "file://example.png",
             location: (123.456, 789.012),
+        ]);
+        let message = msg!(CommonMessage[
+            text: "你好",
+            img: "file://example.png",
+            img: "file://example.png",
+            img: "file://example.png",
         ]);
         let event = MessageEvent::new(generic_id.clone(), channel, user, message);
         let result = wright.emit(&event);
