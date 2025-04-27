@@ -185,4 +185,7 @@ impl Message for OneBotMessage {
             inner: segments,
         }
     }
+    fn iter(&self) -> impl Iterator<Item = &Self::Segment> {
+        self.inner.iter()
+    }
 }

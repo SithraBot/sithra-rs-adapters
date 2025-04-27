@@ -6,9 +6,9 @@ pub const DEFAULT_CONFIG: &str = include_str!("../static/config.toml");
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct OneBotConfig {
-    #[serde(rename = "ws_url")]
+    #[serde(rename = "ws-url")]
     pub ws_url: String,
-    #[serde(rename = "self_id")]
+    #[serde(rename = "self-id")]
     pub self_id: String,
 }
 

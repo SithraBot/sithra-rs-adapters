@@ -738,7 +738,7 @@ dependencies = [
 [[package]]
 name = "sithra_common"
 version = "0.1.0"
-source = "git+https://github.com/SithraBot/sithra-rs.git?branch=refactor#cad051a45a3dd31cc0a887434ca9d5ed59ad9f13"
+source = "git+https://github.com/SithraBot/sithra-rs.git?branch=refactor#4b85e86192e05550f9734aeb599074945572155c"
 dependencies = [
  "ioevent",
  "log",
@@ -754,7 +754,7 @@ dependencies = [
 [[package]]
 name = "sithra_macro"
 version = "0.1.0"
-source = "git+https://github.com/SithraBot/sithra-rs.git?branch=refactor#cad051a45a3dd31cc0a887434ca9d5ed59ad9f13"
+source = "git+https://github.com/SithraBot/sithra-rs.git?branch=refactor#4b85e86192e05550f9734aeb599074945572155c"
 dependencies = [
  "proc-macro2",
  "quote",
