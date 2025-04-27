@@ -1,22 +1,41 @@
+use ioevent::error::CallSubscribeError;
 use thiserror::Error;
+use tokio_tungstenite::tungstenite;
+use tokio::sync::oneshot;
 
 #[derive(Debug, Error)]
 pub enum OneBotApiError {
-    #[error("WebSocket连接错误: {0}")]
-    WebSocketError(#[from] tokio_tungstenite::tungstenite::Error),
+    #[error("WebSocket错误: {0}")]
+    WebSocket(#[from] tungstenite::Error),
 
-    #[error("JSON序列化错误: {0}")]
-    JsonError(#[from] serde_json::Error),
+    #[error("JSON错误: {0}")]
+    Json(#[from] serde_json::Error),
 
     #[error("通道错误: {0}")]
-    ChannelError(#[from] tokio::sync::oneshot::error::RecvError),
+    Channel(#[from] oneshot::error::RecvError),
 
-    #[error("WebSocket消息类型错误")]
-    InvalidMessageType,
-
-    #[error("响应超时")]
+    #[error("请求超时")]
     Timeout,
 
-    #[error("未知错误: {0}")]
-    Unknown(String),
-} 
+    #[error("消息格式错误")]
+    InvalidMessage,
+
+    #[error("内部错误: {0}")]
+    Internal(String),
+}
+
+impl OneBotApiError {
+    pub fn is_retryable(&self) -> bool {
+        matches!(
+            self,
+            OneBotApiError::WebSocket(_) | 
+            OneBotApiError::Timeout
+        )
+    }
+}
+
+impl From<OneBotApiError> for CallSubscribeError {
+    fn from(error: OneBotApiError) -> Self {
+        CallSubscribeError::Other(error.to_string())
+    }
+}

@@ -1,5 +1,7 @@
-use sithra_onebot_common::message::*;
+#![allow(unused)]
+
 use serde::{Deserialize, Serialize};
+use sithra_onebot_common::message::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", content = "data")]
@@ -162,10 +164,11 @@ impl From<OneBotSegment> for InternalSegment {
             OneBotSegment::Reply(message_id) => InternalSegment::Reply(ReplyData {
                 id: message_id.to_string(),
             }),
-            OneBotSegment::Forward(forward_id) => {
-                InternalSegment::Forward(ForwardData { id: forward_id.to_string() })
-            }
+            OneBotSegment::Forward(forward_id) => InternalSegment::Forward(ForwardData {
+                id: forward_id.to_string(),
+            }),
             OneBotSegment::Unknown => InternalSegment::Unknown,
         }
     }
 }
+

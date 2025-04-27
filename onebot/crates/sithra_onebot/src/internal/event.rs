@@ -1,5 +1,6 @@
 use ioevent::Event;
 use serde::{Deserialize, Serialize};
+use sithra_common::model::SVec;
 
 use super::message::InternalSegment;
 
@@ -41,7 +42,7 @@ pub struct InternalPrivateMessage {
     pub sub_type: String,
     pub message_id: i32,
     pub user_id: u64,
-    pub message: Vec<InternalSegment>,
+    pub message: SVec<InternalSegment>,
     pub raw_message: String,
     pub font: i32,
     pub sender: InternalPrivateSender,
@@ -62,7 +63,7 @@ pub struct InternalGroupMessage {
     pub group_id: u64,
     pub user_id: u64,
     pub anonymous: Option<InternalAnonymous>,
-    pub message: Vec<InternalSegment>,
+    pub message: SVec<InternalSegment>,
     pub raw_message: String,
     pub font: i32,
     pub sender: InternalGroupSender,

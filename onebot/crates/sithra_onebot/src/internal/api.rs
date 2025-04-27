@@ -1,18 +1,7 @@
+#![allow(unused)]
 pub mod response {
     use crate::internal::message::InternalSegment;
     use serde::{Deserialize, Serialize};
-    /// API响应基础结构
-    #[derive(Debug, Serialize, Deserialize)]
-    pub struct ApiResponse {
-        /// 响应状态
-        pub status: Option<String>,
-        /// 返回码
-        pub retcode: Option<i32>,
-        /// 响应数据
-        pub data: Option<ApiResponseKind>,
-        /// 与请求对应的echo标识
-        pub echo: String,
-    }
 
     #[derive(Debug, Serialize, Deserialize)]
     pub struct OnlyEcho {
@@ -177,17 +166,12 @@ pub mod request {
     use std::num::ParseIntError;
 
     use ioevent::rpc::*;
-    use serde::{Deserialize, Serialize};
-    use sithra_common::model::{Channel, MessageId, UserId};
+    use serde::{Deserialize, Serialize, de::DeserializeOwned};
+    use sithra_common::model::{Channel, MessageId, SVec, UserId};
 
     pub trait OneBotRequest {
-        type RESPONSE;
-    }
-
-    #[derive(Debug, Serialize, Deserialize, ProcedureCall)]
-    pub struct NoneRequest;
-    impl OneBotRequest for NoneRequest {
-        type RESPONSE = ();
+        type RESPONSE: DeserializeOwned;
+        fn into_kind(self) -> ApiRequestKind;
     }
     /// API请求包装结构
     ///
@@ -246,16 +230,19 @@ pub mod request {
     #[derive(Debug, Serialize, Deserialize, ProcedureCall)]
     pub struct SendPrivateMsgParams {
         user_id: String,
-        message: Vec<InternalSegment>,
+        message: SVec<InternalSegment>,
         auto_escape: bool,
     }
     impl OneBotRequest for SendPrivateMsgParams {
         type RESPONSE = MessageIdResponse;
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SendPrivateMsgParams {
-        pub fn new(user_id: UserId, message: Vec<InternalSegment>) -> Self {
+        pub fn new(user_id: Channel, message: SVec<InternalSegment>) -> Self {
             Self {
-                user_id: user_id.to_string(),
+                user_id: user_id.id().to_string(),
                 message,
                 auto_escape: false,
             }
@@ -266,11 +253,14 @@ pub mod request {
     #[derive(Debug, Serialize, Deserialize, ProcedureCall)]
     pub struct SendGroupMsgParams {
         group_id: String,
-        message: Vec<InternalSegment>,
+        message: SVec<InternalSegment>,
         auto_escape: bool,
     }
     impl OneBotRequest for SendGroupMsgParams {
         type RESPONSE = MessageIdResponse;
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SendGroupMsgParams {
         /// 创建发送群消息参数
@@ -278,7 +268,7 @@ pub mod request {
         /// # 参数
         /// - `group_id`: 目标群号
         /// - `message`: 消息内容
-        pub fn new(group_id: Channel, message: Vec<InternalSegment>) -> Self {
+        pub fn new(group_id: Channel, message: SVec<InternalSegment>) -> Self {
             Self {
                 group_id: group_id.id().to_string(),
                 message,
@@ -294,6 +284,9 @@ pub mod request {
     }
     impl OneBotRequest for DeleteMsgParams {
         type RESPONSE = ();
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl DeleteMsgParams {
         /// 创建消息撤回参数
@@ -314,6 +307,9 @@ pub mod request {
     }
     impl OneBotRequest for GetMsgParams {
         type RESPONSE = MessageDetail;
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl GetMsgParams {
         /// 创建获取消息参数
@@ -336,6 +332,9 @@ pub mod request {
     }
     impl OneBotRequest for SetGroupKickParams {
         type RESPONSE = ();
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SetGroupKickParams {
         /// 创建群组踢人参数
@@ -344,11 +343,7 @@ pub mod request {
         /// - `group_id`: 目标群号
         /// - `user_id`: 被踢用户QQ号
         /// - `reject_add_request`: 是否拒绝后续加群
-        pub fn new(
-            group_id: Channel,
-            user_id: UserId,
-            reject_add_request: bool,
-        ) -> Self {
+        pub fn new(group_id: Channel, user_id: UserId, reject_add_request: bool) -> Self {
             Self {
                 group_id: group_id.id().to_string(),
                 user_id: user_id.to_string(),
@@ -366,6 +361,9 @@ pub mod request {
     }
     impl OneBotRequest for SetGroupBanParams {
         type RESPONSE = ();
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SetGroupBanParams {
         /// 创建群组禁言参数
@@ -374,11 +372,7 @@ pub mod request {
         /// - `group_id`: 目标群号
         /// - `user_id`: 被禁言用户QQ号
         /// - `duration`: 禁言时长（秒）
-        pub fn new(
-            group_id: Channel,
-            user_id: UserId,
-            duration: i32,
-        ) -> Self {
+        pub fn new(group_id: Channel, user_id: UserId, duration: i32) -> Self {
             Self {
                 group_id: group_id.id().to_string(),
                 user_id: user_id.to_string(),
@@ -396,6 +390,9 @@ pub mod request {
     }
     impl OneBotRequest for SetGroupAdminParams {
         type RESPONSE = ();
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SetGroupAdminParams {
         /// 创建设置管理员参数
@@ -404,11 +401,7 @@ pub mod request {
         /// - `group_id`: 目标群号
         /// - `user_id`: 用户QQ号
         /// - `enable`: 是否设置为管理员
-        pub fn new(
-            group_id: Channel,
-            user_id: UserId,
-            enable: bool,
-        ) -> Self {
+        pub fn new(group_id: Channel, user_id: UserId, enable: bool) -> Self {
             Self {
                 group_id: group_id.id().to_string(),
                 user_id: user_id.to_string(),
@@ -426,6 +419,9 @@ pub mod request {
     }
     impl OneBotRequest for SetGroupCardParams {
         type RESPONSE = ();
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SetGroupCardParams {
         /// 创建群名片设置参数
@@ -434,11 +430,7 @@ pub mod request {
         /// - `group_id`: 目标群号
         /// - `user_id`: 用户QQ号
         /// - `card`: 新群名片
-        pub fn new(
-            group_id: Channel,
-            user_id: UserId,
-            card: String,
-        ) -> Self {
+        pub fn new(group_id: Channel, user_id: UserId, card: String) -> Self {
             Self {
                 group_id: group_id.id().to_string(),
                 user_id: user_id.to_string(),
@@ -455,6 +447,9 @@ pub mod request {
     }
     impl OneBotRequest for SetGroupLeaveParams {
         type RESPONSE = ();
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SetGroupLeaveParams {
         /// 创建退群参数
@@ -479,6 +474,9 @@ pub mod request {
     }
     impl OneBotRequest for SetFriendAddRequestParams {
         type RESPONSE = ();
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SetFriendAddRequestParams {
         /// 创建好友请求处理参数
@@ -506,6 +504,9 @@ pub mod request {
     }
     impl OneBotRequest for SetGroupAddRequestParams {
         type RESPONSE = ();
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl SetGroupAddRequestParams {
         /// 创建加群请求处理参数
@@ -515,12 +516,7 @@ pub mod request {
         /// - `sub_type`: 请求类型
         /// - `approve`: 是否同意
         /// - `reason`: 拒绝理由
-        pub fn new(
-            flag: String,
-            sub_type: String,
-            approve: bool,
-            reason: String,
-        ) -> Self {
+        pub fn new(flag: String, sub_type: String, approve: bool, reason: String) -> Self {
             Self {
                 flag,
                 sub_type,
@@ -538,6 +534,9 @@ pub mod request {
     }
     impl OneBotRequest for GetStrangerInfoParams {
         type RESPONSE = StrangerInfo;
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl GetStrangerInfoParams {
         /// 创建陌生人信息查询参数
@@ -561,6 +560,9 @@ pub mod request {
     }
     impl OneBotRequest for GetGroupInfoParams {
         type RESPONSE = GroupInfo;
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl GetGroupInfoParams {
         /// 创建群信息查询参数
@@ -585,6 +587,9 @@ pub mod request {
     }
     impl OneBotRequest for GetGroupMemberInfoParams {
         type RESPONSE = GroupMemberInfo;
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl GetGroupMemberInfoParams {
         /// 创建群成员信息查询参数
@@ -613,6 +618,9 @@ pub mod request {
     }
     impl OneBotRequest for GetGroupMemberListParams {
         type RESPONSE = GroupMemberList;
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl GetGroupMemberListParams {
         /// 创建群成员列表查询参数
@@ -632,12 +640,13 @@ pub mod request {
     }
     impl OneBotRequest for CreateForwardMsgParams {
         type RESPONSE = ForwardIdResponse;
+        fn into_kind(self) -> ApiRequestKind {
+            self.into()
+        }
     }
     impl CreateForwardMsgParams {
         pub fn new(messages: Vec<InternalForwardMessage>) -> Self {
-            Self {
-                messages,
-            }
+            Self { messages }
         }
     }
 
